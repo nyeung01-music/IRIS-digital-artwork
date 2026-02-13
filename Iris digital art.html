@@ -1,0 +1,201 @@
+import React, { useState, useEffect } from 'react';
+import { Heart, Share2, ZoomIn, X, Palette, Camera, Info } from 'lucide-react';
+
+const App = () => {
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [likes, setLikes] = useState({});
+  const [activeCategory, setActiveCategory] = useState('全部');
+
+  // 作品數據，提取自 CSV 內容
+  const artworks = [
+    { id: 1, url: 'https://imgur.com/v9DxirY.jpg', title: '色彩幻想 #1', date: '2024' },
+    { id: 2, url: 'https://imgur.com/NhaL9VE.jpg', title: '自然律動 #2', date: '2024' },
+    { id: 3, url: 'https://imgur.com/52ZDiEe.jpg', title: '心靈畫布 #3', date: '2024' },
+    { id: 4, url: 'https://imgur.com/hEUS6h6.jpg', title: '光影交錯 #4', date: '2024' },
+    { id: 5, url: 'https://imgur.com/iZzTCSH.jpg', title: '童真視界 #5', date: '2024' },
+    { id: 6, url: 'https://imgur.com/fvn6UHO.jpg', title: '想像力奔馳 #6', date: '2024' }
+  ];
+
+  const handleLike = (id, e) => {
+    e.stopPropagation();
+    setLikes(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }));
+  };
+
+  const copyLink = (e) => {
+    e.stopPropagation();
+    const dummy = document.createElement('input');
+    document.body.appendChild(dummy);
+    dummy.value = window.location.href;
+    dummy.select();
+    document.execCommand('copy');
+    document.body.removeChild(dummy);
+    // 簡單的提示
+    const btn = e.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="text-xs">已複製!</span>';
+    setTimeout(() => btn.innerHTML = originalText, 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+      {/* 導覽列 */}
+      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="bg-indigo-600 p-2 rounded-lg">
+              <Palette className="text-white w-6 h-6" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">IRIS ART GALLERY</h1>
+          </div>
+          <div className="hidden md:flex gap-8 text-sm font-medium text-slate-600">
+            <a href="#" className="hover:text-indigo-600 transition-colors">藝廊主頁</a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">關於 Iris</a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">聯絡我們</a>
+          </div>
+        </div>
+      </nav>
+
+      {/* 英雄區 (Hero Section) */}
+      <header className="py-16 px-6 bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <span className="inline-block px-4 py-1.5 mb-4 text-xs font-semibold tracking-widest text-indigo-600 uppercase bg-indigo-50 rounded-full">
+            小小藝術家的創作世界
+          </span>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">
+            Iris 的奇幻畫筆
+          </h2>
+          <p className="text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto italic">
+            「每一張畫都是一個故事。歡迎來到我的創作空間，這裡充滿了顏色、夢想和無限的可能。」
+          </p>
+        </div>
+      </header>
+
+      {/* 畫廊網格 */}
+      <main className="max-w-7xl mx-auto px-6 pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {artworks.map((art) => (
+            <div 
+              key={art.id}
+              className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 cursor-pointer"
+              onClick={() => setSelectedImage(art)}
+            >
+              {/* 圖片容器 */}
+              <div className="aspect-[4/3] overflow-hidden bg-slate-200">
+                <img 
+                  src={art.url} 
+                  alt={art.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=Art+Work'; }}
+                />
+                {/* 懸停覆蓋層 */}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="bg-white/90 p-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                    <ZoomIn className="w-6 h-6 text-slate-800" />
+                  </div>
+                </div>
+              </div>
+
+              {/* 資訊卡片 */}
+              <div className="p-5">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-lg text-slate-900">{art.title}</h3>
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-tighter">{art.date}</span>
+                </div>
+                <div className="flex items-center gap-4 mt-4">
+                  <button 
+                    onClick={(e) => handleLike(art.id, e)}
+                    className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-pink-500 transition-colors"
+                  >
+                    <Heart className={`w-4 h-4 ${likes[art.id] ? 'fill-pink-500 text-pink-500' : ''}`} />
+                    <span>{likes[art.id] || 0}</span>
+                  </button>
+                  <button 
+                    onClick={copyLink}
+                    className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-indigo-600 transition-colors"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>分享</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* 燈箱 Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm p-4 animate-in fade-in duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button className="absolute top-6 right-6 text-white hover:rotate-90 transition-transform p-2">
+            <X className="w-8 h-8" />
+          </button>
+          
+          <div 
+            className="relative max-w-5xl w-full flex flex-col md:flex-row bg-white rounded-3xl overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex-1 bg-slate-100">
+              <img 
+                src={selectedImage.url} 
+                alt={selectedImage.title}
+                className="w-full h-full object-contain max-h-[70vh] md:max-h-[85vh]"
+              />
+            </div>
+            <div className="w-full md:w-80 p-8 flex flex-col justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2 text-slate-900">{selectedImage.title}</h2>
+                <div className="flex items-center gap-2 text-slate-500 text-sm mb-6">
+                  <Camera className="w-4 h-4" />
+                  <span>攝於 {selectedImage.date} 年</span>
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <div className="flex items-center gap-2 font-semibold text-slate-700 mb-1 italic">
+                      <Info className="w-4 h-4" />
+                      作品簡介
+                    </div>
+                    <p className="text-slate-600 text-sm leading-relaxed">
+                      這是 Iris 在這段時間對世界的細膩觀察。透過豐富的色彩層次，表達了對生活的熱愛。
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 flex gap-3">
+                <button 
+                  onClick={(e) => handleLike(selectedImage.id, e)}
+                  className="flex-1 py-3 bg-pink-50 text-pink-600 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-pink-100 transition-colors"
+                >
+                  <Heart className={`w-5 h-5 ${likes[selectedImage.id] ? 'fill-pink-600' : ''}`} />
+                  鼓勵一下
+                </button>
+                <button 
+                  onClick={copyLink}
+                  className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                  <Share2 className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 頁尾 */}
+      <footer className="bg-white border-t border-slate-200 py-12 px-6">
+        <div className="max-w-6xl mx-auto text-center text-slate-500 text-sm">
+          <p>© 2024 Iris Art Collection. All Rights Reserved.</p>
+          <p className="mt-2">Made with love for our little artist.</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
